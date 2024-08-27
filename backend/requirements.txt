@@ -1,1 +1,6 @@
-python-osc>=1.9.0
+loguru==0.7.2
+plumbum==1.8.3
+pyparsing==3.1.4
+python-osc==1.9.0
+rpyc==6.0.0
+streamcontroller-plugin-tools==2.0.1

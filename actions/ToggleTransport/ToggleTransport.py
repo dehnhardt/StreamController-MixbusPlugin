@@ -36,8 +36,6 @@ class ToggleTransport(ActionBase):
         self.set_state( 0 )
       
     def set_state( self, state ):
-        if state == self.current_state:
-            return
         self.current_state = state
         if state == 0:
             icon_name = "play.png"
@@ -46,6 +44,9 @@ class ToggleTransport(ActionBase):
             icon_name = "stop.png"
             self.set_bottom_label("Stop", font_size=16)
         self.set_icon( icon_name )
+
+    def on_tick(self) -> None:
+        self.set_state(self.current_state)
         
     def on_key_up(self) -> None:
         pass

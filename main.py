@@ -19,7 +19,7 @@ class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
-        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True)
+        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, ".venv"))
         
         # Register plugin
         self.register(
