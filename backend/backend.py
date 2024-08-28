@@ -22,10 +22,10 @@ class Backend(BackendBase):
         self.osc_client = udp_client.SimpleUDPClient(ip, port)
         log.debug("Sending on {}".format(self.osc_client._address))
         time.sleep(2)
-        self.osc_client.send_message("/set_surface", 0 )
+        self.osc_client.send_message("/set_surface", [0, 127, 8211] )
    
     def default_callback(address: str, *osc_arguments: List[Any]) -> None:
-        #print( "default handler", address, osc_arguments )
+        print( "default handler", address, osc_arguments )
         pass
 
     def heartbeat_callback(self, address: str, *osc_arguments: List[Any]) -> None:
@@ -50,6 +50,8 @@ class Backend(BackendBase):
         log.debug( path + " " + value )
         self.frontend.goto_start_event_holder.trigger_event( path, value )
         self.frontend.goto_end_event_holder.trigger_event( path, value )
+        self.frontend.goto_next_marker_event_holder.trigger_event( path, value )
+        self.frontend.goto_prev_marker_event_holder.trigger_event( path, value )
         
     def send_message(self, path, params):
         self.osc_client.send_message( path, params)

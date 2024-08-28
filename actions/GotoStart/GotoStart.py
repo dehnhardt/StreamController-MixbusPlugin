@@ -13,14 +13,12 @@ class GotoStart(MixbusActionBase):
     def set_state( self, state ):
         super().set_state( state )
         self.current_state = state
-        icon_name = "FR.png"
-        active = False
+        icon_name = "previous.png"
         if state == "start":
             self.set_text("At Start")
         else:
-            self.set_text("")
-            active = True
-        self.set_icon( icon_name, active )
+            self.set_text("Goto Start")
+        self.set_icon( icon_name, state != "start" )
             
     def on_key_down(self) -> None:
         try:

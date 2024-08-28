@@ -18,6 +18,8 @@ from .actions.ToggleRecord.ToggleRecord import ToggleRecord
 from .actions.ToggleLoop.ToggleLoop import ToggleLoop
 from .actions.GotoStart.GotoStart import GotoStart
 from .actions.GotoEnd.GotoEnd import GotoEnd
+from .actions.GotoNextMarker.GotoNextMarker import GoToNextMarker
+from .actions.GotoPrevMarker.GotoPrevMarker import GoToPrevMarker
 
 class MixbusPlugin(PluginBase):
     def __init__(self):
@@ -126,6 +128,41 @@ class MixbusPlugin(PluginBase):
 
         self.add_event_holder(self.goto_end_event_holder)
 
+        # Goto prev marker
+        self.goto_prev_marker_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = GoToPrevMarker,
+            action_id_suffix = "GotoPrevMarker",
+            action_name = "Go to Prev Marker",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        
+        self.add_action_holder(self.goto_prev_marker_action_holder)
+
+        self.goto_prev_marker_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::GotoPrevMarker",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.goto_prev_marker_event_holder)
+
+        # Goto next marker
+        self.goto_next_marker_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = GoToNextMarker,
+            action_id_suffix = "GotoNextMarker",
+            action_name = "Go to Next Marker",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        
+        self.add_action_holder(self.goto_next_marker_action_holder)
+
+        self.goto_next_marker_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::GotoNextMarker",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.goto_next_marker_event_holder)
 
     def get_connected(self):
         try:

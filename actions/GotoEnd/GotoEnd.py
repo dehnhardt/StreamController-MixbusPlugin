@@ -13,12 +13,11 @@ class GotoEnd(MixbusActionBase):
     def set_state( self, state ):
         super().set_state( state )
         self.current_state = state
+        icon_name = "next.png"
         if state == "end":
-            icon_name = "FF.png"
             self.set_text("At End")
         else:
-            icon_name = "FF.png"
-            self.set_text("")
+            self.set_text("Goto End")
         self.set_icon( icon_name, state != "end" )
             
     def on_key_down(self) -> None:
