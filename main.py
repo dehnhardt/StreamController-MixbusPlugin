@@ -19,7 +19,7 @@ class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
-        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, ".venv"))
+        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, "backend", ".venv"))
         
         # Register plugin
         self.register(
@@ -45,7 +45,6 @@ class MixbusPlugin(PluginBase):
             plugin_base = self
         )
 
-        #self.toggle_transport_event_holder.add_listener(self.transport_callback)
         self.add_event_holder(self.toggle_transport_event_holder)
 
     def get_connected(self):
