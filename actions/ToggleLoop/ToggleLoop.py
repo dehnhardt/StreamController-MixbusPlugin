@@ -12,13 +12,12 @@ class ToggleLoop(MixbusActionBase):
         
     def set_state( self, state ):
         self.current_state = state
+        icon_name = "Loop.png"
         if state == 0:
-            icon_name = "stop.png"
-            self.set_text("Loop off")
+            self.set_text("Off")
         else:
-            icon_name = "Loop.png"
-            self.set_text("Loop on")
-        self.set_icon( icon_name )
+            self.set_text("On")
+        self.set_icon( icon_name, state )
             
     def on_key_down(self) -> None:
         try:
@@ -35,3 +34,8 @@ class ToggleLoop(MixbusActionBase):
         state = args[2]
         log.debug( "on loop change - status " + str( state ))
         self.set_state(state)
+
+    def on_ready(self):
+        ok = super().on_ready()
+        self.set_state(0)
+        return ok

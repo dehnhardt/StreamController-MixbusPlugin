@@ -2,28 +2,29 @@ from plugins.org_dehnhardt_MixbusPlugin.MixbusActionBase import MixbusActionBase
 from loguru import logger as log
 
 
-class ToggleTransport(MixbusActionBase):
+class GotoStart(MixbusActionBase):
     def __init__(self, *args, **kwargs):
         log.debug( "__init__")
         super().__init__(*args, **kwargs)
-        self.current_state = -1
-        self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::ToggleTransport",
+        self.current_state = ""
+        self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::GotoStart",
                                           callback=self.on_value_change)
         
     def set_state( self, state ):
-        super().set_state(state)
+        super().set_state( state )
         self.current_state = state
-        if state == 0:
-            icon_name = "play.png"
-            self.set_text("Play")
+        icon_name = "FR.png"
+        active = False
+        if state == "start":
+            self.set_text("At Start")
         else:
-            icon_name = "stop.png"
-            self.set_text("Stop")
-        self.set_icon( icon_name )
+            self.set_text("")
+            active = True
+        self.set_icon( icon_name, active )
             
     def on_key_down(self) -> None:
         try:
-            self.plugin_base.backend.send_message("/toggle_roll", 1 )         
+            self.plugin_base.backend.send_message("/goto_start", 1 )    
         except Exception as e:
             log.error(e)
             self.show_error()
@@ -34,10 +35,10 @@ class ToggleTransport(MixbusActionBase):
         if len(args) < 3:
             return
         state = args[2]
-        log.debug( "on transport change - status " + str( state ))
+        log.debug( "on goto_start - status " + str( state ))
         self.set_state(state)
 
     def on_ready(self):
         ok = super().on_ready()
-        self.set_state(0)
+        self.set_state("x")
         return ok

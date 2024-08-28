@@ -11,14 +11,14 @@ class ToggleRecord(MixbusActionBase):
                                           callback=self.on_value_change)
         
     def set_state( self, state ):
-        self.current_state = state
+        super().set_state( state )
         if state == 0:
-            icon_name = "stop.png"
-            self.set_text("")
+            icon_name = "Record.png"
+            self.set_text("Off")
         else:
             icon_name = "Record.png"
-            self.set_text("Record")
-        self.set_icon( icon_name )
+            self.set_text("On")
+        self.set_icon( icon_name, state )
             
     def on_key_down(self) -> None:
         try:
@@ -35,3 +35,8 @@ class ToggleRecord(MixbusActionBase):
         state = args[2]
         log.debug( "on record change - status " + str( state ))
         self.set_state(state)
+
+    def on_ready(self):
+        ok = super().on_ready()
+        self.set_state(0)
+        return ok
