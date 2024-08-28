@@ -34,8 +34,18 @@ class Backend(BackendBase):
     def transport_callback(self, path, value ) -> None:
         log.debug( path + " " + str(value) )
         self.frontend.toggle_transport_event_holder.trigger_event( path, value )
-        pass
 
+    def record_callback(self, path, value ) -> None:
+        log.debug( path + " " + str(value) )
+        self.frontend.toggle_record_event_holder.trigger_event( path, value )
+
+    def loop_callback(self, path, value ) -> None:
+        log.debug( path + " " + str(value) )
+        self.frontend.toggle_loop_event_holder.trigger_event( path, value )
+        #for some reason, a "/transport:play, 0" is transferred from mixbus. We need to overwirte this
+        if value == 1:
+            self.transport_callback("/transport_play", 1)
+        
     def send_message(self, path, params):
         self.osc_client.send_message( path, params)
 
@@ -44,8 +54,10 @@ class Backend(BackendBase):
         log.debug("Starting backend")
         self.dispatcher = Dispatcher()
         self.dispatcher.set_default_handler( self.default_callback )
-        self.dispatcher.map( "/heartbeat", self.heartbeat_callback )
+        self.dispatcher.map("/heartbeat", self.heartbeat_callback )
         self.dispatcher.map("/transport_play", self.transport_callback )
+        self.dispatcher.map("/rec_enable_toggle", self.record_callback )
+        self.dispatcher.map("/loop_toggle", self.loop_callback )
         self.start_osc_server('127.0.0.1', 8000)
         self.start_osc_client('127.0.0.1', 3819)
 

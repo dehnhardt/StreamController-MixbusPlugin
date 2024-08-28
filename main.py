@@ -14,6 +14,8 @@ from loguru import logger as log
 
 # Import actions
 from .actions.ToggleTransport.ToggleTransport import ToggleTransport
+from .actions.ToggleRecord.ToggleRecord import ToggleRecord
+from .actions.ToggleLoop.ToggleLoop import ToggleLoop
 
 class MixbusPlugin(PluginBase):
     def __init__(self):
@@ -30,6 +32,8 @@ class MixbusPlugin(PluginBase):
         )
 
         ## Register actions
+
+        # ToggleTransport
         self.toggle_transport_action_holder = ActionHolder(
             plugin_base = self,
             action_base = ToggleTransport,
@@ -46,6 +50,42 @@ class MixbusPlugin(PluginBase):
         )
 
         self.add_event_holder(self.toggle_transport_event_holder)
+
+        # ToggleRecord
+        self.toggle_record_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = ToggleRecord,
+            action_id_suffix = "ToggleRecord",
+            action_name = "Toggle Record",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        
+        self.add_action_holder(self.toggle_record_action_holder)
+
+        self.toggle_record_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::ToggleRecord",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.toggle_record_event_holder)
+
+        # ToggleLoop
+        self.toggle_loop_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = ToggleLoop,
+            action_id_suffix = "ToggleLoop",
+            action_name = "Toggle Loop",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        
+        self.add_action_holder(self.toggle_loop_action_holder)
+
+        self.toggle_loop_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::ToggleLoop",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.toggle_loop_event_holder)
 
     def get_connected(self):
         try:
