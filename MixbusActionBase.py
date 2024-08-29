@@ -21,7 +21,7 @@ class MixbusActionBase( ActionBase ):
             if not active:
                 background = Image.new(mode="RGBA", size=image.size, color=(220, 220, 220, 0))
                 log.debug("use disabled icon")
-                ni=Image.blend(background, image, 0.5)
+                ni=Image.blend(background, image, 0.4)
             else:
                 ni = image
             self.set_media(image=ni)
