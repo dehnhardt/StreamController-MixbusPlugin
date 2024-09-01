@@ -1,4 +1,4 @@
-import threading, time
+import threading, time, asyncio, sys
 
 from streamcontroller_plugin_tools import BackendBase 
 from pythonosc import udp_client
@@ -8,6 +8,21 @@ from loguru import logger as log
 from pyparsing import Any, List
 
 class Backend(BackendBase):
+
+    async def server_loop(self):
+        while self.loop:
+            await asyncio.sleep(1)
+        log.debug("Loop stopped")
+        
+
+    async def start_async_osc_server(self, ip, port):
+        log.debug("Starting ASYNC Server")
+        self.osc_server = osc_server.AsyncIOOSCUDPServer((ip, port), self.dispatcher, asyncio.get_event_loop())
+        transport, protocol = await self.osc_server.create_serve_endpoint() 
+        await self.server_loop()
+        log.debug("Loop stopped")
+        transport.close()  # Clean up serve endpoint
+
 
     def start_osc_server(self, ip, port):
         log.debug("Starting Server")
@@ -19,17 +34,21 @@ class Backend(BackendBase):
 
     def start_osc_client(self, ip, port):
         log.debug("Starting Client")
-        self.osc_client = udp_client.SimpleUDPClient(ip, port)
+        self.osc_client = udp_client.DispatchClient(ip, port)
+        self.osc_client.dispatcher = self.dispatcher
         log.debug("Sending on {}".format(self.osc_client._address))
-        time.sleep(2)
-        self.osc_client.send_message("/set_surface", [0, 127, 8219] )
    
     def default_callback(address: str, *osc_arguments: List[Any]) -> None:
         print( "default handler", address, osc_arguments )
-        pass
 
-    def heartbeat_callback(self, address: str, *osc_arguments: List[Any]) -> None:
-        pass
+    def client_default_callback(address: str, *osc_arguments: List[Any]) -> None:
+        print( "client_default handler", address, osc_arguments )
+
+    def print_callback(self, address: str, *osc_arguments: List[Any]) -> None:
+        print( "print", address, osc_arguments )
+
+    def reply_callback(self, address: str, *osc_arguments: List[Any]) -> None:
+        print( "reply", self.last_path, osc_arguments )
 
     def toggle_transport_callback(self, path, value ) -> None:
         log.debug( path + " " + str(value) )
@@ -79,18 +98,33 @@ class Backend(BackendBase):
         self.frontend.selected_toggle_polarity_event_holder.trigger_event( path, value )
 
     def selected_name_callback(self, path, value):
-        log.debug( path + " " + str(value) )
+        log.debug( "\n" + path + " " + str(value) )
         self.frontend.selected_name_event_holder.trigger_event( path, value )
 
-    def send_message(self, path, params):
+    def send_message(self, path, params = None):
+        log.debug( path + " " +  str(params))
+        self.last_path = path
         self.osc_client.send_message( path, params)
+
+    # async def send_message_and_handle_reply(self, path, params):
+    #     log.debug( path + " " +  str(params))
+    #     await self.osc_client.send_message( path, params)
+    #     await self.osc_client.handle_messages()
+
+    # def hrm(self, path, params = ""):
+    #      asyncio.run(self.send_message_and_handle_reply( path, params))
 
     def __init__(self):
         super().__init__()
+        self.loop = True
         log.debug("Starting backend")
+        self.last_path = ""
         self.dispatcher = Dispatcher()
-        self.dispatcher.set_default_handler( self.default_callback )
-        self.dispatcher.map("/heartbeat", self.heartbeat_callback )
+        self.client_dispatcher = Dispatcher()
+        self.client_dispatcher.set_default_handler( self.client_default_callback )
+        #self.dispatcher.set_default_handler( self.default_callback )
+        self.dispatcher.map("/heartbeat", self.print_callback )
+        self.dispatcher.map("/reply", self.reply_callback )
         self.dispatcher.map("/transport_play", self.toggle_transport_callback )
         self.dispatcher.map("/rec_enable_toggle", self.toggle_record_callback )
         self.dispatcher.map("/loop_toggle", self.toggle_loop_callback )
@@ -104,7 +138,14 @@ class Backend(BackendBase):
         self.dispatcher.map("/select/polarity", self.selected_toggle_polarity_callback )
         self.dispatcher.map("/select/name", self.selected_name_callback )
 
-        self.start_osc_server('127.0.0.1', 8000)
         self.start_osc_client('127.0.0.1', 3819)
+        asyncio.run(self.start_async_osc_server('127.0.0.1', 8000))
+
+    def on_disconnect(self, conn):
+        res = super().on_disconnect(conn)
+        log.debug("Sopping backend")
+        self.loop = False
+        return res
+
 
 backend = Backend() 

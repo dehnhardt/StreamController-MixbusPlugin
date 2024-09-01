@@ -19,7 +19,7 @@ class SelectedName(MixbusActionBase):
         if len(args) < 3:
             return
         state = args[2]
-        log.debug( "on selected name change - status " + str( state ))
+        log.debug( "\non selected name change - status " + str( state ))
         self.set_state(state)
 
     def on_ready(self):

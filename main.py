@@ -1,8 +1,6 @@
-from functools import partial
 import os
 
-from pyparsing import Any, List
-
+from PIL import Image
 
 from src.backend.PluginManager.PluginBase import PluginBase
 from src.backend.PluginManager.ActionHolder import ActionHolder
@@ -24,6 +22,7 @@ from .actions.ToggleTransport.ToggleTransport import ToggleTransport
 from .actions.Save.Save import Save
 from .actions.Undo.Undo import Undo
 from .actions.Redo.Redo import Redo
+from .actions.StripList.StripList import StripList
 
 from .actions.SelectedToggleSolo.SelectedToggleSolo import SelectedToggleSolo
 from .actions.SelectedToggleMute.SelectedToggleMute import SelectedToggleMute
@@ -31,13 +30,20 @@ from .actions.SelectedToggleRec.SelectedToggleRec import SelectedToggleRec
 from .actions.SelectedTogglePolarity.SelectedTogglePolarity import SelectedTogglePolarity
 from .actions.SelectedName.SelectedName import SelectedName
 
+from .actions.AccessAction.AccessAction import AccessAction
+
+from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHolder
+
+
 class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
         self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, "backend", ".venv"))
         self.wait_for_backend(10)
-        
+        self.backend.send_message("/set_surface", [0, 127, 24595] )
+        #self.backend.send_message("/set_surface", [0, 127, 8211] )
+
         # Register plugin
         self.register(
             plugin_name = "Harrison Mixbus",
@@ -233,6 +239,18 @@ class MixbusPlugin(PluginBase):
         self.add_action_holder(self.redo_action_holder)
         # we have no feedback here...
 
+        # StripList
+        self.strip_list_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = StripList,
+            action_id_suffix = "StripList",
+            action_name = "Strip List",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+
+        self.add_action_holder(self.strip_list_action_holder)
+        # we have no feedback here...
+
         ## Selected Strip Actions
 
         # SelectedToggleSolo
@@ -325,6 +343,31 @@ class MixbusPlugin(PluginBase):
 
         self.add_event_holder(self.selected_name_event_holder)
 
+        ## Mixbus / Ardour AccessActions
+
+        # Add Strip
+        self.add_strip_action_holder = AccessActionHolder(
+            plugin_base = self,
+            action_base = AccessAction,
+            action_id_suffix = "AddTrackBus",
+            action_name = "Add Track or Bus",
+            icon_name = "add_strip.png",
+            access_action_path="Main/AddTrackBus",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.add_strip_action_holder)
+
+        # Quick Export
+        self.quick_export_action_holder = AccessActionHolder(
+            plugin_base = self,
+            action_base = AccessAction,
+            action_id_suffix = "QuickExport",
+            action_name = "Quick Export",
+            icon_name = "export.png",
+            access_action_path="Main/QuickExport",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.quick_export_action_holder)
 
     def get_connected(self):
         try:

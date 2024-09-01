@@ -7,7 +7,7 @@ class ToggleClick(MixbusActionBase):
         log.debug( "__init__")
         super().__init__(*args, **kwargs)
         self.click = False
-        self.current_state = -1
+        self.current_state = 0
         self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::ToggleClick",
                                           callback=self.on_value_change)
         self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::OnClick",

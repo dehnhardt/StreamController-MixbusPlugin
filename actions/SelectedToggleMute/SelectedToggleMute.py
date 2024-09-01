@@ -6,7 +6,7 @@ class SelectedToggleMute(MixbusActionBase):
     def __init__(self, *args, **kwargs):
         log.debug( "__init__")
         super().__init__(*args, **kwargs)
-        self.current_state = -1
+        self.current_state = 0
         self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedToggleMute",
                                           callback=self.on_value_change)
         
