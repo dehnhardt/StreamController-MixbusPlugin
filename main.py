@@ -31,6 +31,7 @@ from .actions.SelectedTogglePolarity.SelectedTogglePolarity import SelectedToggl
 from .actions.SelectedName.SelectedName import SelectedName
 
 from .actions.AccessAction.AccessAction import AccessAction
+from .actions.ConfigurableAccessAction.CongigurableAccessAction import ConfigurableAccessAction
 
 from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHolder
 
@@ -47,7 +48,7 @@ class MixbusPlugin(PluginBase):
         # Register plugin
         self.register(
             plugin_name = "Harrison Mixbus",
-            github_repo = "https://github.com/StreamController/PluginTemplate",
+            github_repo = "https://github.com/dehnhardt/StreamController-MixbusPlugin",
             plugin_version = "1.0.0",
             app_version = "1.0.0-alpha"
         )
@@ -368,6 +369,29 @@ class MixbusPlugin(PluginBase):
             action_support={Input.Key: ActionInputSupport.SUPPORTED}
         )
         self.add_action_holder(self.quick_export_action_holder)
+
+        # LUA Action
+        self.lua1_action_holder = AccessActionHolder(
+            plugin_base = self,
+            action_base = AccessAction,
+            action_id_suffix = "LuaAction3",
+            action_name = "Mixer Strip Configuration",
+            icon_name = "export.png",
+            access_action_path="LuaAction/script-3",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.lua1_action_holder)
+
+        # Configurable Ardour/Mixbus actions
+        self.configurable_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = ConfigurableAccessAction,
+            action_id_suffix = "LuaAction_x",
+            action_name = "Configurable Action",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.configurable_action_holder)
+
 
     def get_connected(self):
         try:
