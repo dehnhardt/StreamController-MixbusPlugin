@@ -1,6 +1,7 @@
 import threading, time, asyncio, sys
 
 from streamcontroller_plugin_tools import BackendBase 
+from StripList import StripList
 from pythonosc import udp_client
 from pythonosc.dispatcher import Dispatcher
 from pythonosc import osc_server
@@ -49,6 +50,16 @@ class Backend(BackendBase):
 
     def reply_callback(self, address: str, *osc_arguments: List[Any]) -> None:
         print( "reply", self.last_path, osc_arguments )
+        if self.last_path == "/strip/list":
+            if len(osc_arguments) < 7:
+                print( "strip_list has not enough arguments" )        
+                return
+            if len(osc_arguments) < 8:
+                print( "strip_list for bus/master/monitor" )        
+                self.strip_list.add_strip( type=osc_arguments[0], name=osc_arguments[1], inputs=osc_arguments[2], outputs=osc_arguments[3], mute=osc_arguments[4], solo=osc_arguments[5], ssid=osc_arguments[6])
+            else:
+                self.strip_list.add_strip( type=osc_arguments[0], name=osc_arguments[1], inputs=osc_arguments[2], outputs=osc_arguments[3], mute=osc_arguments[4], solo=osc_arguments[5], ssid=osc_arguments[6], recenable=osc_arguments[7])
+
 
     def toggle_transport_callback(self, path, value ) -> None:
         log.debug( path + " " + str(value) )
@@ -99,7 +110,11 @@ class Backend(BackendBase):
 
     def selected_name_callback(self, path, value):
         log.debug( "\n" + path + " " + str(value) )
+        self.selected_strip = value
+        #has_recenabled = self.strip_list.has_recenabled(self.selected_strip)
         self.frontend.selected_name_event_holder.trigger_event( path, value )
+        #self.frontend.selected_enable_rec_event_holder.trigger_event( has_recenabled )
+
 
     def send_message(self, path, params = None):
         log.debug( path + " " +  str(params))
@@ -122,7 +137,11 @@ class Backend(BackendBase):
         self.dispatcher = Dispatcher()
         self.client_dispatcher = Dispatcher()
         self.client_dispatcher.set_default_handler( self.client_default_callback )
+        self.strip_list = StripList( self )
+        self.selected_strip = ""
+
         #self.dispatcher.set_default_handler( self.default_callback )
+
         self.dispatcher.map("/heartbeat", self.print_callback )
         self.dispatcher.map("/reply", self.reply_callback )
         self.dispatcher.map("/transport_play", self.toggle_transport_callback )
@@ -143,7 +162,7 @@ class Backend(BackendBase):
 
     def on_disconnect(self, conn):
         res = super().on_disconnect(conn)
-        log.debug("Sopping backend")
+        log.debug("Stopping backend")
         self.loop = False
         return res
 

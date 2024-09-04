@@ -10,13 +10,17 @@ class SelectedToggleRec(MixbusActionBase):
         self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedToggleRec",
                                           callback=self.on_value_change)
         
+        self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectEnableRec",
+                                          callback=self.on_enble)
+
+        
     def set_state( self, state ):
         self.current_state = state
         icon_name = "record_strip.png"
-        if state == 0:
-            self.set_text("Off")
-        else:
+        if state == 1:
             self.set_text("On")
+        else:
+            self.set_text("Off")
         self.set_icon( icon_name, state )
             
     def on_key_down(self) -> None:
@@ -36,6 +40,14 @@ class SelectedToggleRec(MixbusActionBase):
         state = args[2]
         log.debug( "on selected rec change - status " + str( state ))
         self.set_state(state)
+
+    async def on_enble(self, lala, enabled):
+        if enabled:
+            self.set_state(self.state)
+            log.debug( "is enabled")
+        else:
+            self.set_state(-1)
+            log.debug( "is disabled")
 
     def on_ready(self):
         ok = super().on_ready()

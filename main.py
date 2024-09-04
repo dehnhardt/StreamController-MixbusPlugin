@@ -1,4 +1,5 @@
 import os
+import time
 
 from PIL import Image
 
@@ -35,15 +36,12 @@ from .actions.ConfigurableAccessAction.CongigurableAccessAction import Configura
 
 from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHolder
 
-
 class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
         self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, "backend", ".venv"))
-        self.wait_for_backend(10)
-        self.backend.send_message("/set_surface", [0, 127, 24595] )
-        #self.backend.send_message("/set_surface", [0, 127, 8211] )
+        self.wait_for_backend(5)
 
         # Register plugin
         self.register(
@@ -53,6 +51,21 @@ class MixbusPlugin(PluginBase):
             app_version = "1.0.0-alpha"
         )
 
+        self.register_actions()
+        self.init_daw()
+
+    def init_daw( self ):
+
+        log.debug("************* MixbusPlugin /set_surface")
+        self.backend.send_message("/set_surface", [0, 127, 24595] )
+
+        time.sleep(5)
+        log.debug("************* MixbusPlugin /strip_list")
+        self.backend.send_message("/strip_list")
+
+
+    def register_actions(self):
+        log.debug( "start register actions")
         ## Register actions
         # ToggleClick
         self.toggle_click_action_holder = ActionHolder(
@@ -298,15 +311,19 @@ class MixbusPlugin(PluginBase):
             action_name = "Toggle Rec",
             action_support={Input.Key: ActionInputSupport.SUPPORTED}
         )
-        
         self.add_action_holder(self.selected_toggle_rec_action_holder)
 
         self.selected_toggle_rec_event_holder = EventHolder(
             event_id = "org_dehnhardt_MixbusPlugin::SelectedToggleRec",
             plugin_base = self
         )
-
         self.add_event_holder(self.selected_toggle_rec_event_holder)
+
+        self.selected_enable_rec_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::SelectEnableRec",
+            plugin_base = self
+        )
+        self.add_event_holder(self.selected_enable_rec_event_holder)
 
         # SelectedTogglePolarity
         self.selected_toggle_polarity_action_holder = ActionHolder(
@@ -351,7 +368,7 @@ class MixbusPlugin(PluginBase):
             plugin_base = self,
             action_base = AccessAction,
             action_id_suffix = "AddTrackBus",
-            action_name = "Add Track or Bus",
+            action_name = "Ad Strip",
             icon_name = "add_strip.png",
             access_action_path="Main/AddTrackBus",
             action_support={Input.Key: ActionInputSupport.SUPPORTED}
@@ -363,7 +380,7 @@ class MixbusPlugin(PluginBase):
             plugin_base = self,
             action_base = AccessAction,
             action_id_suffix = "QuickExport",
-            action_name = "Quick Export",
+            action_name = "Quick Exp.",
             icon_name = "export.png",
             access_action_path="Main/QuickExport",
             action_support={Input.Key: ActionInputSupport.SUPPORTED}
@@ -391,6 +408,11 @@ class MixbusPlugin(PluginBase):
             action_support={Input.Key: ActionInputSupport.SUPPORTED}
         )
         self.add_action_holder(self.configurable_action_holder)
+
+
+        log.debug("************* Actions registered")
+
+        
 
 
     def get_connected(self):

@@ -1,6 +1,6 @@
 from src.backend.PluginManager.ActionBase import ActionBase
 from loguru import logger as log
-from PIL import Image
+from PIL import Image, ImageDraw
 
 
 import os
@@ -11,14 +11,21 @@ class MixbusActionBase( ActionBase ):
         self.init = False
         self.current_state =""
 
-    def set_icon( self, icon_name, active = True ):
-        log.debug( "set_icon " + icon_name + ", active: " + str(active))
+    def set_icon( self, icon_name, status = 1 ):
+        log.debug( "set_icon " + icon_name + ", active: " + str(status))
         p = os.path.join(self.plugin_base.PATH, "assets", icon_name)
         if not os.path.exists( p ):
             log.error( "icon path does not exists" )
         try: 
             image = Image.open(fp=p)
-            if not active:
+            if status == -1:
+                draw = ImageDraw.Draw(image)
+                margin = 50
+                draw.line((margin, margin, image.size[0]-margin, image.size[1]-margin), fill=(255, 255, 255, 150), width=20)
+                draw.line((margin, image.size[1]-margin, image.size[0]-margin, margin), fill=(255, 255, 255, 150), width=20)
+                background = Image.new(mode="RGBA", size=image.size, color=(220, 220, 220, 0))
+                ni=Image.blend(background, image, 0.4)
+            elif status == 0:
                 background = Image.new(mode="RGBA", size=image.size, color=(220, 220, 220, 0))
                 log.debug("use disabled icon")
                 ni=Image.blend(background, image, 0.4)
