@@ -1,3 +1,5 @@
+import time
+
 from plugins.org_dehnhardt_MixbusPlugin.MixbusActionBase import MixbusActionBase
 from loguru import logger as log
 
@@ -19,7 +21,10 @@ class StripList(MixbusActionBase):
             
     def on_key_down(self) -> None:
         try:
+            #self.plugin_base.backend.send_message_and_handle_reply("/strip/list" )
             self.plugin_base.backend.send_message("/strip/list" )
+            time.sleep(2)
+
         except Exception as e:
             log.error(e)
             self.show_error()

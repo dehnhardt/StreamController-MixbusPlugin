@@ -2,9 +2,9 @@ import threading, time, asyncio, sys
 
 from streamcontroller_plugin_tools import BackendBase 
 from StripList import StripList
-from pythonosc import udp_client
+from pythonosc import udp_client, osc_server
+from pythonosc.osc_message import OscMessage
 from pythonosc.dispatcher import Dispatcher
-from pythonosc import osc_server
 from loguru import logger as log
 from pyparsing import Any, List
 
@@ -27,7 +27,7 @@ class Backend(BackendBase):
 
     def start_osc_server(self, ip, port):
         log.debug("Starting Server")
-        self.osc_server = osc_server.ThreadingOSCUDPServer((ip, port), self.dispatcher)
+        self.osc_server = osc_server.ThreadingOSCUDPServer((ip, port, True), self.dispatcher)
         log.debug("Serving on {}".format(self.osc_server.server_address))
         thread = threading.Thread(target=self.osc_server.serve_forever)
         thread.start()
@@ -111,9 +111,9 @@ class Backend(BackendBase):
     def selected_name_callback(self, path, value):
         log.debug( "\n" + path + " " + str(value) )
         self.selected_strip = value
-        #has_recenabled = self.strip_list.has_recenabled(self.selected_strip)
+        has_recenabled = self.strip_list.has_recenabled(self.selected_strip)
         self.frontend.selected_name_event_holder.trigger_event( path, value )
-        #self.frontend.selected_enable_rec_event_holder.trigger_event( has_recenabled )
+        self.frontend.selected_enable_rec_event_holder.trigger_event( has_recenabled )
 
 
     def send_message(self, path, params = None):
@@ -121,11 +121,12 @@ class Backend(BackendBase):
         self.last_path = path
         self.osc_client.send_message( path, params)
 
-    # async def send_message_and_handle_reply(self, path, params):
-    #     log.debug( path + " " +  str(params))
-    #     await self.osc_client.send_message( path, params)
-    #     await self.osc_client.handle_messages()
-
+    def send_message_and_handle_reply(self, path, params = None):
+        log.debug( path + " " +  str(params))
+        self.osc_client.send_message( path, params)
+        res=OscMessage(self.osc_client._sock.recv(4096))
+        log.debug( str(res) )
+        
     # def hrm(self, path, params = ""):
     #      asyncio.run(self.send_message_and_handle_reply( path, params))
 
@@ -158,6 +159,8 @@ class Backend(BackendBase):
         self.dispatcher.map("/select/name", self.selected_name_callback )
 
         self.start_osc_client('127.0.0.1', 3819)
+        #self.start_osc_client('127.0.0.1', 8000)
+        #asyncio.run(self.start_async_osc_server('127.0.0.1', 3819))
         asyncio.run(self.start_async_osc_server('127.0.0.1', 8000))
 
     def on_disconnect(self, conn):

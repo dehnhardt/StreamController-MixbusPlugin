@@ -56,17 +56,17 @@ class MixbusPlugin(PluginBase):
 
     def init_daw( self ):
 
+        log.debug("************* MixbusPlugin /strip/list")
+        self.backend.send_message("/strip/list")
+        time.sleep(2)
+
         log.debug("************* MixbusPlugin /set_surface")
+        #self.backend.send_message("/set_surface", [0, 127, 63] )
         self.backend.send_message("/set_surface", [0, 127, 24595] )
-
-        time.sleep(5)
-        log.debug("************* MixbusPlugin /strip_list")
-        self.backend.send_message("/strip_list")
-
 
     def register_actions(self):
         log.debug( "start register actions")
-        ## Register actions
+        
         # ToggleClick
         self.toggle_click_action_holder = ActionHolder(
             plugin_base = self,
