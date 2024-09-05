@@ -30,6 +30,7 @@ from .actions.SelectedToggleMute.SelectedToggleMute import SelectedToggleMute
 from .actions.SelectedToggleRec.SelectedToggleRec import SelectedToggleRec
 from .actions.SelectedTogglePolarity.SelectedTogglePolarity import SelectedTogglePolarity
 from .actions.SelectedName.SelectedName import SelectedName
+from .actions.SelectedSpill.SelectedSpill import SelectedSpill
 
 from .actions.AccessAction.AccessAction import AccessAction
 from .actions.ConfigurableAccessAction.CongigurableAccessAction import ConfigurableAccessAction
@@ -66,7 +67,7 @@ class MixbusPlugin(PluginBase):
 
     def register_actions(self):
         log.debug( "start register actions")
-        
+
         # ToggleClick
         self.toggle_click_action_holder = ActionHolder(
             plugin_base = self,
@@ -360,6 +361,25 @@ class MixbusPlugin(PluginBase):
         )
 
         self.add_event_holder(self.selected_name_event_holder)
+
+        # SelectedName
+        self.selected_spill_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = SelectedSpill,
+            action_id_suffix = "SelectedSpill",
+            action_name = "Spill",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        
+        self.add_action_holder(self.selected_spill_action_holder)
+
+        self.selected_spill_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::SelectedSpill",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.selected_spill_event_holder)
+
 
         ## Mixbus / Ardour AccessActions
 

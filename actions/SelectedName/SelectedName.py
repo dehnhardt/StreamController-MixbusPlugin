@@ -9,6 +9,7 @@ class SelectedName(MixbusActionBase):
         self.current_state = ""
         self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedName",
                                           callback=self.on_value_change)
+        self.enabled = False
         
     def set_state( self, state ):
         self.current_state = state

@@ -17,7 +17,7 @@ class GoToNextMarker(MixbusActionBase):
         self.set_icon( icon_name, state != "end" )
         self.set_text( state )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/next_marker", 1 )
             self.current_state = True

@@ -2,16 +2,14 @@ from plugins.org_dehnhardt_MixbusPlugin.MixbusActionBase import MixbusActionBase
 from loguru import logger as log
 
 
-class SelectedToggleRec(MixbusActionBase):
+class SelectedSpill(MixbusActionBase):
     def __init__(self, *args, **kwargs):
         log.debug( "__init__")
         super().__init__(*args, **kwargs)
         self.current_state = 0
-        self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedToggleRec",
-                                          callback=self.on_value_change)
+        #self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedToggleRec",
+        #                                  callback=self.on_value_change)
         
-        self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectEnableRec",
-                                          callback=self.on_enble)
 
         
     def set_state( self, state ):
@@ -26,8 +24,11 @@ class SelectedToggleRec(MixbusActionBase):
     def do_action(self) -> None:
         try:
             val = abs(self.current_state - 1)
-            log.debug("/select/rec " + str(val) )
-            self.plugin_base.backend.send_message("/select/recenable", val ) 
+            log.debug("/select/spill " + str(val) )
+            #if val == 0:
+            self.plugin_base.backend.send_message("/select/spill" ) 
+            #else:
+            #    self.plugin_base.backend.send_message("/select/spill", al ) 
         except Exception as e:
             log.error(e)
             self.show_error()
@@ -38,16 +39,8 @@ class SelectedToggleRec(MixbusActionBase):
         if len(args) < 3:
             return
         state = args[2]
-        log.debug( "on selected rec change - status " + str( state ))
+        log.debug( "on selected spill change - status " + str( state ))
         self.set_state(state)
-
-    async def on_enble(self, lala, enabled):
-        if enabled:
-            self.set_state(self.state)
-            log.debug( "is enabled")
-        else:
-            self.set_state(-1)
-            log.debug( "is disabled")
 
     def on_ready(self):
         ok = super().on_ready()

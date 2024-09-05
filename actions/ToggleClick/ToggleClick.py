@@ -22,7 +22,7 @@ class ToggleClick(MixbusActionBase):
             self.set_text("On")
         self.set_icon( icon_name, state )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/toggle_click", 1 )         
         except Exception as e:

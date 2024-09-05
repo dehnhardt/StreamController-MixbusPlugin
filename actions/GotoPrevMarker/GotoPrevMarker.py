@@ -17,7 +17,7 @@ class GoToPrevMarker(MixbusActionBase):
         self.set_text(state)
         self.set_icon( icon_name, state != "start" )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/prev_marker", 1 )
             self.current_state = True

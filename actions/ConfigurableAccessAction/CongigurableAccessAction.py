@@ -17,7 +17,7 @@ class ConfigurableAccessAction(MixbusActionBase):
         self.name =""
         self.action = ""
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         log.debug( "ActionSuffix: " + self.action )
         try:
             self.plugin_base.backend.send_message("/access_action/" + self.action, None )

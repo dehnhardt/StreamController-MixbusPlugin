@@ -21,7 +21,8 @@ class ToggleTransport(MixbusActionBase):
             self.set_text("Stop")
         self.set_icon( icon_name )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
+        log.debug( "do_action")
         try:
             self.plugin_base.backend.send_message("/toggle_roll", 1 )         
         except Exception as e:

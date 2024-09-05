@@ -9,7 +9,7 @@ class AccessAction(MixbusActionBase):
         super().__init__(*args, **kwargs)
         self.current_state = -1
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         action = self.plugin_base.action_holders[self.action_id].access_action_path
         log.debug( "ActionSuffix: " + action )
         try:

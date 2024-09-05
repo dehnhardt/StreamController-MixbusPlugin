@@ -19,7 +19,7 @@ class SelectedTogglePolarity(MixbusActionBase):
             self.set_text("On")
         self.set_icon( icon_name, state )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             val = abs(self.current_state - 1)
             log.debug("/select/polarity " + str(val) )

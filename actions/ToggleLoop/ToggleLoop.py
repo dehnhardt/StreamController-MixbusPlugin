@@ -19,7 +19,7 @@ class ToggleLoop(MixbusActionBase):
             self.set_text("On")
         self.set_icon( icon_name, state )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/loop_toggle", 1 )         
         except Exception as e:

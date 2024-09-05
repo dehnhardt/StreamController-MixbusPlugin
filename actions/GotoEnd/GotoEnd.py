@@ -20,7 +20,7 @@ class GotoEnd(MixbusActionBase):
             self.set_text("Goto End")
         self.set_icon( icon_name, state != "end" )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/goto_end", 1 )    
         except Exception as e:

@@ -17,7 +17,7 @@ class Redo(MixbusActionBase):
         self.set_icon( icon_name, state )
         self.set_text( self.action_name )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/redo", 1 )         
         except Exception as e:

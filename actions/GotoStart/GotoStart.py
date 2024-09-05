@@ -20,7 +20,7 @@ class GotoStart(MixbusActionBase):
             self.set_text("Goto Start")
         self.set_icon( icon_name, state != "start" )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             self.plugin_base.backend.send_message("/goto_start", 1 )    
         except Exception as e:

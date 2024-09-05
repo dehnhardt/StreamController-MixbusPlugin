@@ -19,7 +19,7 @@ class StripList(MixbusActionBase):
         self.set_icon( icon_name, state )
         self.set_text( self.action_name )
             
-    def on_key_down(self) -> None:
+    def do_action(self) -> None:
         try:
             #self.plugin_base.backend.send_message_and_handle_reply("/strip/list" )
             self.plugin_base.backend.send_message("/strip/list" )
