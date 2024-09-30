@@ -1,7 +1,15 @@
+import gi
 from src.backend.PluginManager.ActionBase import ActionBase
 from loguru import logger as log
 from PIL import Image, ImageDraw
 from abc import ABCMeta, abstractmethod
+
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Adw
+
+from .internal.MixbusConfig import MixbusConfigWindow
+from .internal.PluginConfig import PluginConfigButton
 
 import os
 
@@ -16,7 +24,16 @@ class MixbusActionBase( ActionBase ):
         self.init = False
         self.current_state =""
         self.enabled = True
+        self.plugin_config = PluginConfigButton(self.plugin_base, MixbusConfigWindow, True)
 
+    def get_custom_config_area(self):
+        self.ui = Adw.PreferencesGroup()
+
+        self.plugin_config.unparent()
+        self.ui.add(self.plugin_config)
+
+        return self.ui
+    
     def set_icon( self, icon_name, status = 1 ):
         log.debug( "set_icon " + icon_name + ", active: " + str(status))
         p = os.path.join(self.plugin_base.PATH, "assets", icon_name)

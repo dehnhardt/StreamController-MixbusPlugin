@@ -6,6 +6,8 @@ from pythonosc import udp_client, osc_server
 from pythonosc.osc_message import OscMessage
 from pythonosc.dispatcher import Dispatcher
 from loguru import logger as log
+from const import ( SETTING_SERVER_IP, SETTING_SERVER_PORT, SETTING_CLIENT_IP, SETTING_CLIENT_PORT)
+
 from pyparsing import Any, List
 
 class Backend(BackendBase):
@@ -158,16 +160,22 @@ class Backend(BackendBase):
         self.dispatcher.map("/select/polarity", self.selected_toggle_polarity_callback )
         self.dispatcher.map("/select/name", self.selected_name_callback )
 
-        self.start_osc_client('127.0.0.1', 3819)
-        #self.start_osc_client('127.0.0.1', 8000)
-        #asyncio.run(self.start_async_osc_server('127.0.0.1', 3819))
-        asyncio.run(self.start_async_osc_server('127.0.0.1', 8000))
+        self.start_osc_client(
+            self.get_setting( SETTING_CLIENT_IP, '127.0.0.1'), 
+            self.get_setting( SETTING_CLIENT_PORT, 3819 ) )
+        asyncio.run(self.start_async_osc_server( 
+            self.get_setting( SETTING_SERVER_IP, '127.0.0.1'), 
+            self.get_setting( SETTING_SERVER_PORT, 8000 ) ) )
 
     def on_disconnect(self, conn):
         res = super().on_disconnect(conn)
         log.debug("Stopping backend")
         self.loop = False
         return res
+    
+    def get_setting(self, key: str, default=None):
+        return self.frontend.get_settings().get(key, default)
+
 
 
 backend = Backend() 

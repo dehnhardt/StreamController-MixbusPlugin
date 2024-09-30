@@ -25,6 +25,8 @@ from .actions.Undo.Undo import Undo
 from .actions.Redo.Redo import Redo
 from .actions.StripList.StripList import StripList
 
+from .actions.MixerScene.MixerScene import MixerScene
+
 from .actions.SelectedToggleSolo.SelectedToggleSolo import SelectedToggleSolo
 from .actions.SelectedToggleMute.SelectedToggleMute import SelectedToggleMute
 from .actions.SelectedToggleRec.SelectedToggleRec import SelectedToggleRec
@@ -36,6 +38,17 @@ from .actions.AccessAction.AccessAction import AccessAction
 from .actions.ConfigurableAccessAction.CongigurableAccessAction import ConfigurableAccessAction
 
 from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHolder
+from plugins.org_dehnhardt_MixbusPlugin.backend.const import (
+    FEEDBACK_VALUE_STRIP_BUTTONS,
+    FEEDBACK_VALUE_STRIP_CONTROLS,
+    FEEDBACK_VALUE_MASTER_SECTION,
+    FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK,
+    FEEDBACK_VALUE_USE_SLASH_REPLY,
+    FEEDBACK_VALUE_REPORT_TRIGGER_STATUS,
+    FEEDBACK_VALUE_REPORT_MIXER_SCENE,
+    SETTING_ENABLE_TRIGGERS, 
+    SETTING_ENABLE_MIXER_SCENES )
+from typing import Dict, Any
 
 class MixbusPlugin(PluginBase):
     def __init__(self):
@@ -57,13 +70,28 @@ class MixbusPlugin(PluginBase):
 
     def init_daw( self ):
 
+        settings = self.get_settings()
+        feedback = FEEDBACK_VALUE_STRIP_BUTTONS + FEEDBACK_VALUE_STRIP_CONTROLS + FEEDBACK_VALUE_MASTER_SECTION + FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK + FEEDBACK_VALUE_USE_SLASH_REPLY
+        self.enable_triggers = settings.get(SETTING_ENABLE_MIXER_SCENES)
+        self.enable_mixer_scenes = settings.get(SETTING_ENABLE_MIXER_SCENES)
+
+        if settings.get(SETTING_ENABLE_TRIGGERS):
+            feedback = feedback + FEEDBACK_VALUE_REPORT_TRIGGER_STATUS
+
+        if settings.get(SETTING_ENABLE_MIXER_SCENES):
+            feedback = feedback + FEEDBACK_VALUE_REPORT_MIXER_SCENE
+
+
         log.debug("************* MixbusPlugin /strip/list")
         self.backend.send_message("/strip/list")
         time.sleep(2)
 
-        log.debug("************* MixbusPlugin /set_surface")
+        log.debug("************* MixbusPlugin /set_surface: feedback: " + str(feedback))
         #self.backend.send_message("/set_surface", [0, 127, 63] )
-        self.backend.send_message("/set_surface", [0, 127, 24595] )
+        #self.backend.send_message("/set_surface", [0, 127, 24595] )
+        #self.backend.send_message("/set_surface", [0, 127, 57363] )
+        #self.backend.send_message("/set_surface", [0, 127, 90131] )
+        self.backend.send_message("/set_surface", [0, 127, feedback] )
 
     def register_actions(self):
         log.debug( "start register actions")
@@ -380,6 +408,23 @@ class MixbusPlugin(PluginBase):
 
         self.add_event_holder(self.selected_spill_event_holder)
 
+        ## Mixbus / Ardour Mixer Scenes
+        self.mixer_scene_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = MixerScene,
+            action_id_suffix = "MixerScene_x",
+            action_name = "Mixer Scene",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.mixer_scene_action_holder)
+
+        #self.mixer_scene_name_event_holder = EventHolder(
+        #    event_id = "org_dehnhardt_MixbusPlugin::MixerSceneName",
+        #    plugin_base = self
+        #)
+
+        #self.add_event_holder(self.mixer_scene_name_event_holder)
+
 
         ## Mixbus / Ardour AccessActions
 
@@ -431,8 +476,6 @@ class MixbusPlugin(PluginBase):
 
 
         log.debug("************* Actions registered")
-
-        
 
 
     def get_connected(self):
