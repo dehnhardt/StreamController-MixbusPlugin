@@ -79,3 +79,7 @@ class MixbusActionBase( ActionBase ):
     def on_key_down(self) ->None:
         if self.enabled:
             self.do_action()
+
+    def on_ready(self):
+        self.set_state("")
+        return super().on_ready()

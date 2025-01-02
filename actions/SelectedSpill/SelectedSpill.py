@@ -7,8 +7,6 @@ class SelectedSpill(MixbusActionBase):
         log.debug( "__init__")
         super().__init__(*args, **kwargs)
         self.current_state = 0
-        #self.plugin_base.connect_to_event(event_id="org_dehnhardt_MixbusPlugin::SelectedToggleRec",
-        #                                  callback=self.on_value_change)
         
 
         
@@ -25,10 +23,7 @@ class SelectedSpill(MixbusActionBase):
         try:
             val = abs(self.current_state - 1)
             log.debug("/select/spill " + str(val) )
-            #if val == 0:
             self.plugin_base.backend.send_message("/select/spill" ) 
-            #else:
-            #    self.plugin_base.backend.send_message("/select/spill", al ) 
         except Exception as e:
             log.error(e)
             self.show_error()

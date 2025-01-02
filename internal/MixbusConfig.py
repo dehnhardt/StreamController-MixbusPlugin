@@ -174,8 +174,8 @@ class MixbusConfigWindow(PluginConfigWindow):
         self.append( self.client_ip_address)
         self.append( self.client_port)
 
-        self.append( self.enable_triggers)
-        self.append( self.enable_mixer_scenes)
+        #self.append( self.enable_triggers)
+        #self.append( self.enable_mixer_scenes)
 
     def load_config_ui(self):
         settings = self.plugin_base.get_settings()

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from loguru import logger as log
 
 @dataclass
 class Strip:
@@ -16,18 +17,24 @@ class StripList:
 
     def __init__(self, backend):
         self.strip_list = dict()
+        self.new_strip_list = dict()
+
+    def enable( self ):
+        self.strip_list = self.new_strip_list
+        self.new_strip_list = dict
+        log.debug( "enabling new StripList with {} strips".format( len( self.strip_list )))
 
     def add_strip( self, type, name, inputs, outputs, mute, solo, ssid, recenable = None):
         has_recenable = False
         if type in ("AT", "MT"):
             has_recenable = True
-        self.strip_list[name] = Strip( type, name, inputs, outputs, mute, solo, has_recenable, recenable )
+        self.new_strip_list[name] = Strip( type, name, inputs, outputs, mute, solo, has_recenable, recenable )
 
     def get_Strip( self, name ) -> Strip:
-        s = self.strip_list[name]
-        if s is not None:
+        try: 
+            s = self.strip_list[name]
             return s
-        else:
+        except:
             return Strip()
         
     def has_recenabled( self, name ) -> bool:

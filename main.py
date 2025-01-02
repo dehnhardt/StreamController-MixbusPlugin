@@ -41,20 +41,22 @@ from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHo
 from plugins.org_dehnhardt_MixbusPlugin.backend.const import (
     FEEDBACK_VALUE_STRIP_BUTTONS,
     FEEDBACK_VALUE_STRIP_CONTROLS,
+    FEEDBACK_VALUE_HEARTBEAT,
     FEEDBACK_VALUE_MASTER_SECTION,
     FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK,
     FEEDBACK_VALUE_USE_SLASH_REPLY,
     FEEDBACK_VALUE_REPORT_TRIGGER_STATUS,
     FEEDBACK_VALUE_REPORT_MIXER_SCENE,
     SETTING_ENABLE_TRIGGERS, 
-    SETTING_ENABLE_MIXER_SCENES )
+    SETTING_ENABLE_MIXER_SCENES,
+    SETTING_SERVER_PORT )
 from typing import Dict, Any
 
 class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
-        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=True, venv_path=os.path.join(self.PATH, "backend", ".venv"))
+        self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=False, venv_path=os.path.join(self.PATH, "backend", ".venv"))
         self.wait_for_backend(5)
 
         # Register plugin
@@ -71,9 +73,10 @@ class MixbusPlugin(PluginBase):
     def init_daw( self ):
 
         settings = self.get_settings()
-        feedback = FEEDBACK_VALUE_STRIP_BUTTONS + FEEDBACK_VALUE_STRIP_CONTROLS + FEEDBACK_VALUE_MASTER_SECTION + FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK + FEEDBACK_VALUE_USE_SLASH_REPLY
+        feedback = FEEDBACK_VALUE_STRIP_BUTTONS + FEEDBACK_VALUE_STRIP_CONTROLS + FEEDBACK_VALUE_HEARTBEAT + FEEDBACK_VALUE_MASTER_SECTION + FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK + FEEDBACK_VALUE_USE_SLASH_REPLY
         self.enable_triggers = settings.get(SETTING_ENABLE_MIXER_SCENES)
         self.enable_mixer_scenes = settings.get(SETTING_ENABLE_MIXER_SCENES)
+        serverport = settings.get( SETTING_SERVER_PORT )
 
         if settings.get(SETTING_ENABLE_TRIGGERS):
             feedback = feedback + FEEDBACK_VALUE_REPORT_TRIGGER_STATUS
@@ -81,17 +84,13 @@ class MixbusPlugin(PluginBase):
         if settings.get(SETTING_ENABLE_MIXER_SCENES):
             feedback = feedback + FEEDBACK_VALUE_REPORT_MIXER_SCENE
 
+        log.debug("* MixbusPlugin /set_surface: feedback: " + str(feedback))
+        self.backend.send_message("/set_surface", [0, 127, feedback, 0, 0, 0, serverport ] )
 
-        log.debug("************* MixbusPlugin /strip/list")
+        log.debug("* MixbusPlugin /strip/list")
         self.backend.send_message("/strip/list")
         time.sleep(2)
 
-        log.debug("************* MixbusPlugin /set_surface: feedback: " + str(feedback))
-        #self.backend.send_message("/set_surface", [0, 127, 63] )
-        #self.backend.send_message("/set_surface", [0, 127, 24595] )
-        #self.backend.send_message("/set_surface", [0, 127, 57363] )
-        #self.backend.send_message("/set_surface", [0, 127, 90131] )
-        self.backend.send_message("/set_surface", [0, 127, feedback] )
 
     def register_actions(self):
         log.debug( "start register actions")

@@ -13,8 +13,14 @@ from pyparsing import Any, List
 class Backend(BackendBase):
 
     async def server_loop(self):
+        self.heartbeat = time.time()
         while self.loop:
             await asyncio.sleep(1)
+            elapsed = time.time() - self.heartbeat
+            if elapsed > 3:
+                log.debug( "Mixbus disabled")
+                self.frontend.init_daw()
+                self.heartbeat = time.time()
         log.debug("Loop stopped")
         
 
@@ -44,6 +50,9 @@ class Backend(BackendBase):
     def default_callback(address: str, *osc_arguments: List[Any]) -> None:
         print( "default handler", address, osc_arguments )
 
+    def heartbeat_callback(self, address: str, *osc_arguments: List[Any]) -> None:
+        self.heartbeat = time.time()
+
     def client_default_callback(address: str, *osc_arguments: List[Any]) -> None:
         print( "client_default handler", address, osc_arguments )
 
@@ -53,6 +62,9 @@ class Backend(BackendBase):
     def reply_callback(self, address: str, *osc_arguments: List[Any]) -> None:
         print( "reply", self.last_path, osc_arguments )
         if self.last_path == "/strip/list":
+            if len( osc_arguments ) == 4:
+                log.debug( "End of striplist")
+                self.strip_list.enable()
             if len(osc_arguments) < 7:
                 print( "strip_list has not enough arguments" )        
                 return
@@ -145,7 +157,7 @@ class Backend(BackendBase):
 
         #self.dispatcher.set_default_handler( self.default_callback )
 
-        self.dispatcher.map("/heartbeat", self.print_callback )
+        self.dispatcher.map("/heartbeat", self.heartbeat_callback )
         self.dispatcher.map("/reply", self.reply_callback )
         self.dispatcher.map("/transport_play", self.toggle_transport_callback )
         self.dispatcher.map("/rec_enable_toggle", self.toggle_record_callback )
