@@ -69,7 +69,7 @@ class MixbusPlugin(PluginBase):
 
         self.register_actions()
         self.init_daw()
-
+    
     def init_daw( self ):
 
         settings = self.get_settings()

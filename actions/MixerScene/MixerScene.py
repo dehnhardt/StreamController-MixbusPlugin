@@ -65,7 +65,7 @@ class MixerScene(MixbusActionBase):
     def on_mixer_scene_number_changed(self, namebox):
         settings = self.get_settings()
         self.scene_number = int( self.mixer_scene_entry.get_value())
-        settings["scenenumber"] = self.scene_number
+        settings['scenenumber'] = self.scene_number
         self.set_settings(settings)
         self.set_bottom_label("Scene " + str(self.scene_number) )
 

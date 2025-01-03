@@ -30,10 +30,10 @@ class ConfigurableAccessAction(MixbusActionBase):
         ok = super().on_ready()
         settings = self.get_settings()
         if settings:
-            if settings['namebox'] is not None:
-                self.name = settings['namebox']
-            if settings['actionbox'] is not None:
-                self.action = settings['actionbox']
+            if settings.get('namebox') is not None:
+                self.name = settings.get('namebox')
+            if settings.get('actionbox') is not None:
+                self.action = settings.get('actionbox')
         self.set_text( self.name )
         return ok
     
@@ -51,14 +51,14 @@ class ConfigurableAccessAction(MixbusActionBase):
     def on_actionbox_value_changed(self, actionbox):
         settings = self.get_settings()
         t = actionbox.get_text()
-        settings["actionbox"] = t
+        settings['actionbox'] = t
         self.action = t
         self.set_settings(settings)
 
     def on_namebox_value_changed(self, namebox):
         settings = self.get_settings()
         t = namebox.get_text()
-        settings["namebox"] = t
+        settings['namebox'] = t
         self.name = t
         self.set_label(t)
         self.set_settings(settings)
