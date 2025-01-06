@@ -2,6 +2,8 @@
     "version": "0.9",
     "thumbnail": "store/Thumbnail.png",
     "id": "org_dehnhardt_MixbusPlugin",
+    "minimum-app-version": "1.5.0",
+    "app-version": "1.5.0-beta.6",
     "name": "Harrison Mixbus Plugin",
     "github": "https://github.com/dehnhardt/StreamController-MixbusPlugin",
     "descriptions": {
