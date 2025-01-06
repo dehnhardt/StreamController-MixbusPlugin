@@ -8,7 +8,7 @@ from pythonosc.dispatcher import Dispatcher
 from loguru import logger as log
 from const import ( SETTING_SERVER_IP, SETTING_SERVER_PORT, SETTING_CLIENT_IP, SETTING_CLIENT_PORT)
 
-from pyparsing import Any, List
+from typing import Any, List
 
 class Backend(BackendBase):
 
