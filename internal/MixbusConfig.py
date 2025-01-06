@@ -184,7 +184,7 @@ class MixbusConfigWindow(PluginConfigWindow):
         self.server_port.set_value(settings.get(SETTING_SERVER_PORT, 8000))
 
         self.client_ip_address.set_ip(settings.get(SETTING_CLIENT_IP, "127.0.0.1"))
-        self.client_port.set_value(settings.get(SETTING_CLIENT_PORT, 8000))
+        self.client_port.set_value(settings.get(SETTING_CLIENT_PORT, 3819))
 
         self.enable_mixer_scenes.set_active( settings.get(SETTING_ENABLE_MIXER_SCENES, False))
         self.enable_triggers.set_active( settings.get(SETTING_ENABLE_TRIGGERS, False))
