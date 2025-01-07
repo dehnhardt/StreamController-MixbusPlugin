@@ -148,6 +148,7 @@ class MixbusConfigWindow(PluginConfigWindow):
         # Port
         self.server_port = Adw.SpinRow.new_with_range(0, 65535, 1)
         self.server_port.set_title("Server Port")
+        self.server_port.set_numeric( True )
         self.server_port.connect("changed", self.server_port_changed)
 
         # Client Connections
@@ -158,6 +159,7 @@ class MixbusConfigWindow(PluginConfigWindow):
         # Port
         self.client_port = Adw.SpinRow.new_with_range(0, 65535, 1)
         self.client_port.set_title("Client Port")
+        self.client_port.set_numeric( True )
         self.client_port.connect("changed", self.client_port_changed)
 
         self.enable_triggers = Adw.SwitchRow()
@@ -196,10 +198,11 @@ class MixbusConfigWindow(PluginConfigWindow):
         self.plugin_base.set_settings(settings)
 
     def server_port_changed(self, *args):
-        settings = self.plugin_base.get_settings()
-
-        settings[SETTING_SERVER_PORT] = int(self.server_port.get_value())
-        self.plugin_base.set_settings(settings)
+        p = self.get_port_value( self.server_port )
+        if p != 0:
+            settings = self.plugin_base.get_settings()
+            settings[SETTING_SERVER_PORT] = p
+            self.plugin_base.set_settings(settings)
 
     def client_ip_changed(self, entry, ip_address):
         settings = self.plugin_base.get_settings()
@@ -208,10 +211,23 @@ class MixbusConfigWindow(PluginConfigWindow):
         self.plugin_base.set_settings(settings)
 
     def client_port_changed(self, *args):
-        settings = self.plugin_base.get_settings()
+        p = self.get_port_value( self.client_port )
+        if p != 0:
+            settings = self.plugin_base.get_settings()
+            settings[SETTING_CLIENT_PORT] = p
+            self.plugin_base.set_settings(settings)
 
-        settings[SETTING_CLIENT_PORT] = int(self.client_port.get_value())
-        self.plugin_base.set_settings(settings)        
+    def get_port_value( self, sr ):
+        tv = sr.get_text()
+        p = 0
+        try:
+            if tv != '':
+                p = int(tv)
+            else:
+                p =  int(sr.get_value())
+        except Exception as e:
+            log.error( e )
+        return p
     
     def enable_triggers_changed(self, *args):
         settings = self.plugin_base.get_settings()
