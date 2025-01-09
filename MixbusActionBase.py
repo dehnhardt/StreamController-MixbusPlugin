@@ -65,7 +65,9 @@ class MixbusActionBase( ActionBase ):
         log.debug( "set_icon " + icon_name + " - done" )
               
     def set_text( self, text ):
-        self.set_bottom_label( text, font_size=16)
+        #color = 
+        self.set_top_label( text, font_size=14, color=(255,224,102,255))
+        #self.set_top_label( text, font_size=14)
 
     def set_state(self, state ):
         if self.current_state == state:
