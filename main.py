@@ -63,7 +63,7 @@ class MixbusPlugin(PluginBase):
         self.register(
             plugin_name = "Harrison Mixbus",
             github_repo = "https://github.com/dehnhardt/StreamController-MixbusPlugin",
-            plugin_version = "1.0.0",
+            plugin_version = "1.0.1",
             app_version = "1.0.0-alpha"
         )
 
