@@ -25,13 +25,17 @@ class AccessActionHolder(ActionHolder):
             Input.Touchscreen: ActionInputSupport.UNTESTED
         },
         *args, **kwargs):
-        super().__init__ ( plugin_base, action_base, action_name,
-            icon,
-            min_app_version,
-            action_id,
-            action_id_suffix,
-            action_support,
-            *args, **kwargs 
+        # Bind by keyword: ActionHolder's positional order is not stable across StreamController releases -- a misbind lands the action class in action_name and aborts UI init.
+        super().__init__(
+            plugin_base,
+            action_name=action_name,
+            action_base=action_base,
+            icon=icon,
+            min_app_version=min_app_version,
+            action_id=action_id,
+            action_id_suffix=action_id_suffix,
+            action_support=action_support,
+            *args, **kwargs,
         )
         self.access_action_path = access_action_path
         self.icon_name = icon_name
