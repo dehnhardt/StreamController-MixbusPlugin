@@ -21,8 +21,7 @@ class SelectedSpill(MixbusActionBase):
             
     def do_action(self) -> None:
         try:
-            val = abs(self.current_state - 1)
-            log.debug("/select/spill " + str(val) )
+            log.debug("/select/spill")
             self.plugin_base.backend.send_message("/select/spill" ) 
         except Exception as e:
             log.error(e)

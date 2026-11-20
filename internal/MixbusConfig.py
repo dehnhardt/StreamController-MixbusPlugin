@@ -1,6 +1,6 @@
 import gi
 
-from ..internal.PluginConfig import PluginConfigWindow
+from ..internal.TriggerPage import create_trigger_page
 from ..backend.const import (SETTING_SERVER_IP, SETTING_SERVER_PORT, SETTING_CLIENT_IP, SETTING_CLIENT_PORT, SETTING_ENABLE_TRIGGERS,SETTING_ENABLE_MIXER_SCENES )
 
 gi.require_version("Gtk", "4.0")
@@ -132,10 +132,17 @@ class IpEntryRow(Adw.PreferencesRow):
         self.emit('ip-changed', self.get_ip())
 
 
-class MixbusConfigWindow(PluginConfigWindow):
-    def __init__(self, *args, **kwargs):
+class MixbusConfigGroup(Adw.PreferencesGroup):
+    """Connection settings of the plugin, shown on the plugin's page in the app settings"""
+
+    def __init__(self, plugin_base, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_default_size(600, 400)
+        self.plugin_base = plugin_base
+        self.build()
+        self.load_config_ui()
+
+    def append(self, widget):
+        self.add(widget)
 
     def build(self):
         # Network entry connections
@@ -176,8 +183,17 @@ class MixbusConfigWindow(PluginConfigWindow):
         self.append( self.client_ip_address)
         self.append( self.client_port)
 
+        self.trigger_page_row = Adw.ActionRow(title="Trigger Page", subtitle="Creates a page with the trigger grid for the connected deck")
+        self.create_trigger_page_button = Gtk.Button(label="Create", valign=Gtk.Align.CENTER)
+        self.create_trigger_page_button.connect("clicked", self.on_create_trigger_page)
+        self.trigger_page_row.add_suffix(self.create_trigger_page_button)
+        self.append( self.trigger_page_row)
+
         #self.append( self.enable_triggers)
         #self.append( self.enable_mixer_scenes)
+
+    def on_create_trigger_page(self, *args):
+        self.trigger_page_row.set_subtitle(create_trigger_page())
 
     def load_config_ui(self):
         settings = self.plugin_base.get_settings()

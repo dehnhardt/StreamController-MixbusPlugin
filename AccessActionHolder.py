@@ -25,13 +25,16 @@ class AccessActionHolder(ActionHolder):
             Input.Touchscreen: ActionInputSupport.UNTESTED
         },
         *args, **kwargs):
-        super().__init__ ( plugin_base, action_base, action_name,
-            icon,
-            min_app_version,
-            action_id,
-            action_id_suffix,
-            action_support,
-            *args, **kwargs 
+        super().__init__(
+            plugin_base=plugin_base,
+            action_base=action_base,
+            action_name=action_name,
+            icon=icon,
+            min_app_version=min_app_version,
+            action_id=action_id,
+            action_id_suffix=action_id_suffix,
+            action_support=action_support,
+            **kwargs
         )
         self.access_action_path = access_action_path
         self.icon_name = icon_name

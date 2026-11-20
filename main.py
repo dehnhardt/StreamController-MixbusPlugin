@@ -1,5 +1,5 @@
 import os
-import time
+import threading
 
 from PIL import Image
 
@@ -26,6 +26,8 @@ from .actions.Redo.Redo import Redo
 from .actions.StripList.StripList import StripList
 
 from .actions.MixerScene.MixerScene import MixerScene
+from .actions.Trigger.Trigger import Trigger
+from .actions.TriggerControl.TriggerControl import TriggerControl
 
 from .actions.SelectedToggleSolo.SelectedToggleSolo import SelectedToggleSolo
 from .actions.SelectedToggleMute.SelectedToggleMute import SelectedToggleMute
@@ -38,6 +40,7 @@ from .actions.AccessAction.AccessAction import AccessAction
 from .actions.ConfigurableAccessAction.CongigurableAccessAction import ConfigurableAccessAction
 
 from plugins.org_dehnhardt_MixbusPlugin.AccessActionHolder import AccessActionHolder
+from plugins.org_dehnhardt_MixbusPlugin.internal.MixbusConfig import MixbusConfigGroup
 from plugins.org_dehnhardt_MixbusPlugin.backend.const import (
     FEEDBACK_VALUE_STRIP_BUTTONS,
     FEEDBACK_VALUE_STRIP_CONTROLS,
@@ -56,15 +59,15 @@ class MixbusPlugin(PluginBase):
     def __init__(self):
         super().__init__()
         log.debug("MixbusPlugin started")
+        # Scene (as shown in Mixbus, from 1) recalled last from the deck; Mixbus does not report it over OSC
+        self.active_mixer_scene = None
         self.launch_backend(os.path.join(self.PATH, "backend", "backend.py"), open_in_terminal=False, venv_path=os.path.join(self.PATH, "backend", ".venv"))
         self.wait_for_backend(5)
 
         # Register plugin
         self.register(
             plugin_name = "Harrison Mixbus",
-            github_repo = "https://github.com/dehnhardt/StreamController-MixbusPlugin",
-            plugin_version = "1.0.1",
-            app_version = "1.0.0-alpha"
+            github_repo = "https://github.com/dehnhardt/StreamController-MixbusPlugin"
         )
 
         self.register_actions()
@@ -73,23 +76,13 @@ class MixbusPlugin(PluginBase):
     def init_daw( self ):
 
         settings = self.get_settings()
-        feedback = FEEDBACK_VALUE_STRIP_BUTTONS + FEEDBACK_VALUE_STRIP_CONTROLS + FEEDBACK_VALUE_HEARTBEAT + FEEDBACK_VALUE_MASTER_SECTION + FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK + FEEDBACK_VALUE_USE_SLASH_REPLY
-        self.enable_triggers = settings.get(SETTING_ENABLE_MIXER_SCENES)
+        feedback = FEEDBACK_VALUE_STRIP_BUTTONS + FEEDBACK_VALUE_STRIP_CONTROLS + FEEDBACK_VALUE_HEARTBEAT + FEEDBACK_VALUE_MASTER_SECTION + FEEDBACK_VALUE_SELECT_ONLY_FEEDBACK + FEEDBACK_VALUE_USE_SLASH_REPLY + FEEDBACK_VALUE_REPORT_MIXER_SCENE + FEEDBACK_VALUE_REPORT_TRIGGER_STATUS
+        self.enable_triggers = settings.get(SETTING_ENABLE_TRIGGERS)
         self.enable_mixer_scenes = settings.get(SETTING_ENABLE_MIXER_SCENES)
-        serverport = settings.get( SETTING_SERVER_PORT )
-
-        if settings.get(SETTING_ENABLE_TRIGGERS):
-            feedback = feedback + FEEDBACK_VALUE_REPORT_TRIGGER_STATUS
-
-        if settings.get(SETTING_ENABLE_MIXER_SCENES):
-            feedback = feedback + FEEDBACK_VALUE_REPORT_MIXER_SCENE
+        serverport = settings.get(SETTING_SERVER_PORT, 8000)
 
         log.debug("* MixbusPlugin /set_surface: feedback: " + str(feedback))
         self.backend.send_message("/set_surface", [0, 127, feedback, 0, 0, 0, serverport ] )
-
-        log.debug("* MixbusPlugin /strip/list")
-        self.backend.send_message("/strip/list")
-        time.sleep(2)
 
 
     def register_actions(self):
@@ -417,12 +410,52 @@ class MixbusPlugin(PluginBase):
         )
         self.add_action_holder(self.mixer_scene_action_holder)
 
-        #self.mixer_scene_name_event_holder = EventHolder(
-        #    event_id = "org_dehnhardt_MixbusPlugin::MixerSceneName",
-        #    plugin_base = self
-        #)
+        self.mixer_scene_name_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::MixerSceneName",
+            plugin_base = self
+        )
 
-        #self.add_event_holder(self.mixer_scene_name_event_holder)
+        self.add_event_holder(self.mixer_scene_name_event_holder)
+
+        self.mixer_scene_active_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::MixerSceneActive",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.mixer_scene_active_event_holder)
+
+        ## Mixbus / Ardour Trigger (cue) grid
+        self.trigger_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = Trigger,
+            action_id_suffix = "Trigger",
+            action_name = "Trigger Clip",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.trigger_action_holder)
+
+        self.trigger_grid_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::TriggerGrid",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.trigger_grid_event_holder)
+
+        self.trigger_bank_event_holder = EventHolder(
+            event_id = "org_dehnhardt_MixbusPlugin::TriggerBank",
+            plugin_base = self
+        )
+
+        self.add_event_holder(self.trigger_bank_event_holder)
+
+        self.trigger_control_action_holder = ActionHolder(
+            plugin_base = self,
+            action_base = TriggerControl,
+            action_id_suffix = "TriggerControl",
+            action_name = "Trigger Control",
+            action_support={Input.Key: ActionInputSupport.SUPPORTED}
+        )
+        self.add_action_holder(self.trigger_control_action_holder)
 
 
         ## Mixbus / Ardour AccessActions
@@ -476,6 +509,14 @@ class MixbusPlugin(PluginBase):
 
         log.debug("************* Actions registered")
 
+
+    def set_active_mixer_scene(self, scene: int) -> None:
+        self.active_mixer_scene = scene
+        # The event runs its own event loop, so keep it away from the thread that handles the key press
+        threading.Thread(target=self.mixer_scene_active_event_holder.trigger_event, args=(scene,), daemon=True).start()
+
+    def get_settings_area(self):
+        return MixbusConfigGroup(self)
 
     def get_connected(self):
         try:

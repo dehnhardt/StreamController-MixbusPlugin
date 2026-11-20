@@ -21,7 +21,7 @@ class StripList:
 
     def enable( self ):
         self.strip_list = self.new_strip_list
-        self.new_strip_list = dict
+        self.new_strip_list = dict()
         log.debug( "enabling new StripList with {} strips".format( len( self.strip_list )))
 
     def add_strip( self, type, name, inputs, outputs, mute, solo, ssid, recenable = None):
@@ -34,7 +34,7 @@ class StripList:
         try: 
             s = self.strip_list[name]
             return s
-        except:
+        except KeyError:
             return Strip()
         
     def has_recenabled( self, name ) -> bool:

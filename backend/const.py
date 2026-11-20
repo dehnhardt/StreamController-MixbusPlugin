@@ -18,6 +18,17 @@ SETTING_SERVER_PORT = "serverport"
 SETTING_CLIENT_IP = "clienthost"
 SETTING_CLIENT_PORT = "clientport"
 
+# Settings of the trigger actions
+SETTING_TRIGGER_ROUTE = "triggerroute"
+SETTING_TRIGGER_ROW = "triggerrow"
+SETTING_TRIGGER_COMMAND = "triggercommand"
+SETTING_TRIGGER_STEP = "triggerstep"
+
+# Commands of the TriggerControl action
+TRIGGER_ROWS_UP = "rows_up"
+TRIGGER_ROWS_DOWN = "rows_down"
+TRIGGER_STOP_ALL = "stop_all"
+
 SETTING_ENABLE_TRIGGERS = "triggerpage"
 SETTING_ENABLE_MIXER_SCENES = "mixerscenes"
 

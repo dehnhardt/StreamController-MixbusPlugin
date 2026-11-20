@@ -20,6 +20,14 @@ Simply add the action (e.g. Common/show-mixer) and a name (e.g. "Mixer Page"). I
 ![Configurable Action](https://github.com/dehnhardt/StreamController-MixbusPlugin/blob/main/assets/ConfigurableAction.png)
 
 ## Setup
-If the Stream Controller is running on the same computer as Ardour/Mixbus, the default configuration, which can be found by clicking "Open Config" on any of the Ardour/Mixbus actopns, should be ok.
+If the Stream Controller is running on the same computer as Ardour/Mixbus, the default configuration, which can be found in the Stream Controller settings under Plugins (button "Open Settings" at the Harrison Mixbus plugin), should be ok.
 Otherwise you need to change the IP adresses.
 ![Configuration](https://github.com/dehnhardt/StreamController-MixbusPlugin/blob/main/assets/config.png)
+
+## Trigger page
+The actions "Trigger Clip" and "Trigger Control" control the cue (trigger) grid of Ardour/Mixbus.
+The "Create" button in the plugin settings builds a page for the connected deck: the clip slots fill the keys, the last column scrolls the visible rows up and down and stops all clips.
+Delete an existing page of the same name ("Mixbus Triggers") first.
+
+## Changes
+See [CHANGELOG.md](CHANGELOG.md).
