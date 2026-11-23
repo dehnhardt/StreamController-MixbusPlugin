@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.6 - 2026-11-23
 
 ### Added
 - Long press on a **Mixer Scene** key stores the current mixer state in that scene. Mixbus names a new scene with a timestamp. A long press overwrites an existing scene without asking.

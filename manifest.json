@@ -1,5 +1,5 @@
 {
-    "version": "1.0.5",
+    "version": "1.0.6",
     "thumbnail": "store/Thumbnail.png",
     "id": "org_dehnhardt_MixbusPlugin",
     "minimum-app-version": "1.5.0",
