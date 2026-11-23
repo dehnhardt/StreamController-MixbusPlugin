@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.7 - 2026-11-23
+
+### Fixed
+- Mixer scene names, the heartbeat and all other feedback from Mixbus were missing after the plugin had been reloaded, for example by a store update. The old backend kept the OSC port, so the new one could not receive anything. A new backend now stops its predecessor first.
+- Calls that arrive before the OSC client exists no longer raise an error; the heartbeat loop registers again shortly afterwards.
+
 ## 1.0.6 - 2026-11-23
 
 ### Added

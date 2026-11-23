@@ -1,4 +1,4 @@
-import threading, time, asyncio, sys
+import threading, time, asyncio, sys, os, signal, tempfile
 
 from streamcontroller_plugin_tools import BackendBase 
 from StripList import StripList
@@ -9,6 +9,50 @@ from loguru import logger as log
 from const import ( SETTING_SERVER_IP, SETTING_SERVER_PORT, SETTING_CLIENT_IP, SETTING_CLIENT_PORT)
 
 from typing import Any, List
+
+# Remembers the backend that is running, so a newer one can replace it. It is kept outside the plugin folder,
+# because a store update deletes and recreates that folder.
+PID_FILE = os.path.join(tempfile.gettempdir(), "org_dehnhardt_MixbusPlugin_backend.pid")
+
+
+def is_running(pid: int) -> bool:
+    try:
+        with open("/proc/{}/stat".format(pid)) as f:
+            # a stopped child that nobody has collected yet (zombie) has already released its sockets
+            return f.read().rsplit(")", 1)[1].split()[0] != "Z"
+    except OSError:
+        return False
+
+
+def stop_previous_backend() -> None:
+    """
+    Every plugin reload (for example by a store update) starts a new backend, but the old one keeps running
+    and keeps the OSC port. The new backend then cannot bind it and never receives anything from Mixbus.
+    """
+    try:
+        with open(PID_FILE) as f:
+            pid = int(f.read())
+        with open("/proc/{}/cmdline".format(pid), "rb") as f:
+            cmdline = f.read()
+    except (OSError, ValueError):
+        return
+    if pid == os.getpid() or os.path.basename(__file__).encode() not in cmdline:
+        return
+    log.info("Stopping previous backend {}", pid)
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except OSError:
+        return
+    for _ in range(30):
+        if not is_running(pid):
+            break
+        time.sleep(0.1)
+
+
+def remember_backend() -> None:
+    with open(PID_FILE, "w") as f:
+        f.write(str(os.getpid()))
+
 
 # Seconds without a /heartbeat before Mixbus is considered gone
 HEARTBEAT_TIMEOUT = 3
@@ -203,6 +247,10 @@ class Backend(BackendBase):
     def send_message(self, path, params = None):
         log.debug( path + " " +  str(params))
         self.last_path = path
+        if self.osc_client is None:
+            # The frontend can call in before the OSC client exists; the heartbeat loop registers again later
+            log.debug( "OSC client not ready, dropping " + path )
+            return
         self.osc_client.send_message( path, params)
 
     def send_message_and_handle_reply(self, path, params = None):
@@ -215,6 +263,10 @@ class Backend(BackendBase):
     #      asyncio.run(self.send_message_and_handle_reply( path, params))
 
     def __init__(self):
+        # Before anything is announced to the frontend: the OSC port has to be free
+        stop_previous_backend()
+        remember_backend()
+        self.osc_client = None
         super().__init__()
         self.loop = True
         # Set before the OSC server starts, because /heartbeat can arrive at any time afterwards
