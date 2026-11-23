@@ -2,6 +2,8 @@ from plugins.org_dehnhardt_MixbusPlugin.MixbusActionBase import MixbusActionBase
 
 from loguru import logger as log
 
+from src.backend.DeckManagement.InputIdentifier import Input
+
 # Import gtk
 import gi
 gi.require_version("Gtk", "4.0")
@@ -36,6 +38,7 @@ class MixerScene(MixbusActionBase):
     #    self.set_icon( icon_name, state != "end" )
             
     def do_action(self) -> None:
+        # A short press recalls the scene
         try:
             if self.scene_number >= 1:
                 self.plugin_base.backend.send_message("/recall_mixer_scene", self.scene_number - 1 )
@@ -44,6 +47,29 @@ class MixerScene(MixbusActionBase):
             log.error(e)
             self.show_error()
             return
+
+    def store_scene(self) -> None:
+        # A long press stores the current mixer state in this scene; Mixbus names a new scene with a timestamp
+        try:
+            if self.scene_number >= 1:
+                self.plugin_base.backend.send_message("/store_mixer_scene", self.scene_number - 1 )
+                self.plugin_base.set_active_mixer_scene(self.scene_number)
+        except Exception as e:
+            log.error(e)
+            self.show_error()
+
+    def on_key_down(self) -> None:
+        # Recall on release, so a long press does not recall first
+        pass
+
+    def event_callback(self, event, data = None):
+        if event == Input.Key.Events.SHORT_UP:
+            if self.enabled:
+                self.do_action()
+        elif event == Input.Key.Events.HOLD_START:
+            self.store_scene()
+        else:
+            super().event_callback(event, data)
     
     async def on_value_change(self, *args, **kwargs):
         super().on_value_change(*args, **kwargs)
